@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../components/AuthContext.jsx';
-import { api } from '../components/apiClient.jsx';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthContext.jsx";
+import { api } from "../components/apiClient.jsx";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('manager@example.com');
-  const [password, setPassword] = useState('Password123!');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("manager@example.com");
+  const [password, setPassword] = useState("Password123!");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     try {
-      const res = await api.post('/auth/login', { email, password });
-      login(res.data.user, res.data.token);
-      navigate('/');
+      const res = await api.post("/auth/login", { email, password });
+      login(res.data.user, res.data.token, res.data.user?.provider || "local");
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
   return (
     <div className="max-w-md mx-auto bg-white shadow rounded p-6 mt-10">

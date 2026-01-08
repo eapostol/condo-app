@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import User from '../models/User.js';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import User from "../models/User.js";
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ function signToken(user) {
   return jwt.sign(
     { id: user._id, role: user.role, email: user.email, name: user.name },
     process.env.JWT_SECRET,
-    { expiresIn: '8h' }
+    { expiresIn: "8h" }
   );
 }
 
@@ -18,7 +18,7 @@ export async function register(req, res) {
     const { name, email, username, password, role } = req.body;
     const existing = await User.findOne({ email });
     if (existing) {
-      return res.status(400).json({ message: 'Email already in use' });
+      return res.status(400).json({ message: "Email already in use" });
     }
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({
@@ -26,17 +26,23 @@ export async function register(req, res) {
       email,
       username,
       passwordHash: hash,
-      role: role || 'resident',
-      provider: 'local'
+      role: role || "resident",
+      provider: "local",
     });
     const token = signToken(user);
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name, role: user.role, email: user.email }
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+        email: user.email,
+        provider: user.provider || "local",
+      },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Registration failed' });
+    res.status(500).json({ message: "Registration failed" });
   }
 }
 
@@ -45,30 +51,36 @@ export async function login(req, res) {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user || !user.passwordHash) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = signToken(user);
     res.json({
       token,
-      user: { id: user._id, name: user.name, role: user.role, email: user.email }
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+        email: user.email,
+        provider: user.provider || "local",
+      },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Login failed' });
+    res.status(500).json({ message: "Login failed" });
   }
 }
 
 export async function me(req, res) {
   try {
-    const user = await User.findById(req.user.id).select('-passwordHash');
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const user = await User.findById(req.user.id).select("-passwordHash");
+    if (!user) return res.status(404).json({ message: "User not found" });
     res.json({ user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to load user' });
+    res.status(500).json({ message: "Failed to load user" });
   }
 }

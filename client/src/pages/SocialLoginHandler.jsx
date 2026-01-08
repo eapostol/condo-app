@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../components/AuthContext.jsx';
-import { jwtDecode } from 'jwt-decode';
-
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthContext.jsx";
+import { jwtDecode } from "jwt-decode";
 
 export default function SocialLoginHandler() {
   const location = useLocation();
@@ -11,7 +10,9 @@ export default function SocialLoginHandler() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get('token');
+    const token = params.get("token");
+    const provider = params.get("provider") || "social";
+
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -19,22 +20,23 @@ export default function SocialLoginHandler() {
           id: decoded.id,
           email: decoded.email,
           name: decoded.name,
-          role: decoded.role
+          role: decoded.role,
+          provider,
         };
-        login(user, token);
-        navigate('/');
+        login(user, token, provider);
+
+        login(user, token, provider);
+        navigate("/");
       } catch (err) {
-        console.error('Failed to decode social token', err);
-        navigate('/login');
+        console.error("Failed to decode social token", err);
+        navigate("/login");
       }
     } else {
-      navigate('/login');
+      navigate("/login");
     }
   }, [location.search]);
 
   return (
-    <div className="text-sm text-slate-600">
-      Completing social login...
-    </div>
+    <div className="text-sm text-slate-600">Completing social login...</div>
   );
 }
