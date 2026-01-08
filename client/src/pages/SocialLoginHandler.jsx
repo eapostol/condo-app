@@ -24,8 +24,6 @@ export default function SocialLoginHandler() {
           provider,
         };
         login(user, token, provider);
-
-        login(user, token, provider);
         navigate("/");
       } catch (err) {
         console.error("Failed to decode social token", err);
