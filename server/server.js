@@ -11,7 +11,9 @@ import authRoutes from './src/routes/authRoutes.js';
 import condoRoutes from './src/routes/condoRoutes.js';
 // import swaggerDoc from './src/docs/swagger.json' assert { type: 'json' };
 
-dotenv.config({ path: fileURLToPath(new URL('./server/.env', import.meta.url)) });
+
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +33,11 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/condo', condoRoutes);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+
+// TODO: ensure that vite build in production is served
+// const clientBuildPath = path.join(__dirname, "..", "client", "dist");
+// app.use(express.static(clientBuildPath));
+
 
 // Serve built React app (static files)
 const clientBuildPath = path.join(__dirname, 'public');

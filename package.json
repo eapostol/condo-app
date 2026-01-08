@@ -7,17 +7,18 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "concurrently -n SERVER,CLIENT \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "nodemon server.js",
+    "dev": "concurrently -n SERVER,CLIENT \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
-    "install:all": "npm i && npm --prefix server i && npm --prefix client i"
+    "install:all": "npm i && npm --prefix server i && npm --prefix client i",
+    "start": "npm --prefix server start",
+    "start:server": "npm --prefix server start",
+    "start:client": "npm --prefix client start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "nodemon": "^3.1.11"
+    "concurrently": "^9.2.1"
   }
 }
