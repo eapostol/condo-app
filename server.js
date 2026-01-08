@@ -2,21 +2,27 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import swaggerUi from 'swagger-ui-express';
 import mongoose from 'mongoose';
 import './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import condoRoutes from './src/routes/condoRoutes.js';
-import swaggerDoc from './src/docs/swagger.json' assert { type: 'json' };
+// import swaggerDoc from './src/docs/swagger.json' assert { type: 'json' };
 
-dotenv.config();
+dotenv.config({ path: fileURLToPath(new URL('./server/.env', import.meta.url)) });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load Swagger doc (avoids JSON import assertion issues)
+const swaggerDoc = JSON.parse(
+  fs.readFileSync(new URL('./src/docs/swagger.json', import.meta.url), 'utf-8')
+)
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());

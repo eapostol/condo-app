@@ -1,0 +1,23 @@
+{
+  "name": "app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "This is a demo MERN application that exposes condo management reports through a role-based web portal. It implements:",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "concurrently -n SERVER,CLIENT \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "nodemon server.js",
+    "dev:client": "npm --prefix client run dev",
+    "install:all": "npm i && npm --prefix server i && npm --prefix client i"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11"
+  }
+}
