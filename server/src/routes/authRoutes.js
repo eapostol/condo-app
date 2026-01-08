@@ -22,7 +22,7 @@ router.get(
   passport.authenticate('google', { session: false, failureRedirect: '/' }),
   (req, res) => {
     const token = req.user.jwt;
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
     res.redirect(`${clientUrl}/social-login?token=${token}`);
   }
 );
@@ -38,7 +38,7 @@ router.get(
   }),
   (req, res) => {
     const token = req.user.jwt;
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
     res.redirect(`${clientUrl}/social-login?token=${token}`);
   }
 );
