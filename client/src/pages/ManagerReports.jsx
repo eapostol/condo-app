@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../components/apiClient.jsx';
+import ReportRunner from '../components/ReportRunner.jsx';
 
 export default function ManagerReports() {
   const api = useApi();
@@ -65,6 +66,7 @@ export default function ManagerReports() {
           ))}
         </ul>
       </section>
-    </div>
+      <ReportRunner role="manager" />
+      </div>
   );
 }
