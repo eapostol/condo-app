@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build: .
@@ -10,8 +8,20 @@ services:
       - MONGO_URI=mongodb://mongo:27017/condo_app
       - JWT_SECRET=change_me_in_production
       - CLIENT_URL=http://localhost:3000
+
+      # Reporting provider selection (mysql | mongo)
+      - REPORTING_PROVIDER=mysql
+
+      # MySQL / MariaDB reporting DB
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=condo_mgmt
+      - MYSQL_USER=condo_app
+      - MYSQL_PASSWORD=condo_app_pw
     depends_on:
       - mongo
+      - mysql
+
   mongo:
     image: mongo:7
     restart: unless-stopped
@@ -20,5 +30,22 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3307:3306"
+    env_file:
+      - ./server/env.docker
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=condo_mgmt
+      - MYSQL_USER=condo_app
+      - MYSQL_PASSWORD=condo_app_pw
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./server/db/mysql/init:/docker-entrypoint-initdb.d:ro
+
 volumes:
   mongo-data:
+  mysql-data:
