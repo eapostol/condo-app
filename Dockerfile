@@ -14,4 +14,4 @@ COPY server ./
 COPY --from=client-build /app/client/dist ./public
 ENV NODE_ENV=production
 EXPOSE 5000
-CMD ["node", "/app/server/../server.js"]
+CMD ["node", "/app/server/server.js"]
