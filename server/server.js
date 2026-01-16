@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import condoRoutes from './src/routes/condoRoutes.js';
+import reportRoutes from './src/routes/reportRoutes.js';
 // import swaggerDoc from './src/docs/swagger.json' assert { type: 'json' };
 
 
@@ -32,6 +33,7 @@ app.use(express.json());
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/condo', condoRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 // TODO: ensure that vite build in production is served

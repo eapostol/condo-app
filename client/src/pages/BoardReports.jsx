@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../components/apiClient.jsx';
+import ReportRunner from '../components/ReportRunner.jsx';
 
 export default function BoardReports() {
   const api = useApi();
@@ -50,6 +51,7 @@ export default function BoardReports() {
           ))}
         </ul>
       </section>
-    </div>
+      <ReportRunner role="board" />
+      </div>
   );
 }
