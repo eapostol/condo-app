@@ -36,7 +36,7 @@ services:
     ports:
       - "127.0.0.1:3307:3306"
     env_file:
-      - ./server/env.docker
+      - ./server/.env.docker
     environment:
       - MYSQL_ROOT_PASSWORD=root_password
       - MYSQL_DATABASE=condo_mgmt
