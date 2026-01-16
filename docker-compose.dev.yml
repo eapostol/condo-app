@@ -1,0 +1,69 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env.docker
+    environment:
+      - NODE_ENV=development
+      - SEED_ON_START=true
+      # Helps file watching behave on some Windows/Mac setups
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=200
+    volumes:
+      - ./server:/app/server
+      - api_node_modules:/app/server/node_modules
+    depends_on:
+      - mongo
+      - mysql
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=200
+      # Optional override; client code defaults to http://localhost:5000/api
+      # - VITE_API_URL=http://localhost:5000/api
+    volumes:
+      - ./client:/app/client
+      - client_node_modules:/app/client/node_modules
+    depends_on:
+      - api
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=condo_mgmt
+      - MYSQL_USER=condo_app
+      - MYSQL_PASSWORD=condo_app_pw
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./server/db/mysql/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  api_node_modules:
+  client_node_modules:
+  mongo-data:
+  mysql-data:

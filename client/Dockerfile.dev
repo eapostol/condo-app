@@ -1,0 +1,16 @@
+FROM node:20-alpine
+
+# Root package.json is required because client/package.json references "app": "file:.."
+WORKDIR /app
+COPY package*.json ./
+
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm install
+
+# Optional: copy a baseline of the source into the image.
+# In dev, docker-compose.dev.yml bind-mounts your real source on top.
+COPY client ./
+
+EXPOSE 3000
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
