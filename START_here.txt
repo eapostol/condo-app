@@ -1,0 +1,12 @@
+START HERE — Condo Management Portal (Demo)
+
+1) Open the setup guide PDF in this folder:
+   Condo-App_Docker_Setup_Guide_2026-01-16.pdf
+
+2) Start the demo (from THIS folder) using one command:
+   docker compose up --build
+
+3) When it finishes starting, open your browser:
+   http://localhost:3000
+
+Tip: Leave the terminal window open while you use the demo.
