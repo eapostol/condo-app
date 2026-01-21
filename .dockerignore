@@ -1,0 +1,41 @@
+# .dockerignore
+# Reduce Docker build context size and avoid baking secrets into images.
+# 2016-01-16
+
+# Dependencies
+**/node_modules
+
+# Vite/React build outputs
+client/dist
+client/.vite
+
+# Server static output (generated during Docker build)
+server/public
+
+# Local environment files (keep on disk for docker compose env_file, but don't send to Docker build context)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS / IDE clutter
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+
+# Backups and archives
+**/*.bak
+**/*.tmp
+**/*.zip
+
+# Git
+.git
+.gitignore

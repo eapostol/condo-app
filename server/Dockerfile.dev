@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+# Root package.json is required because server/package.json references "app": "file:.."
+WORKDIR /app
+COPY package*.json ./
+
+WORKDIR /app/server
+COPY server/package*.json ./
+RUN npm install
+
+# Optional: copy a baseline of the source into the image.
+# In dev, docker-compose.dev.yml bind-mounts your real source on top.
+COPY server ./
+
+# Seed-once entrypoint (optional in dev)
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 5000
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["npm", "run", "dev"]
