@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApi } from './apiClient.jsx';
 import ReportTable from './ReportTable.jsx';
-import { downloadReportPdf } from '../utils/reportPdf.js';
 
 export default function ReportRunner({ role }) {
   const api = useApi();
@@ -78,7 +77,8 @@ export default function ReportRunner({ role }) {
     return summary;
   }
 
-  function onSavePdf() {
+  async function onSavePdf() {
+    const { downloadReportPdf } = await import('../utils/reportPdf.js');
     downloadReportPdf({
       title: selected?.title || 'Report',
       rows,
