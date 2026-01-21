@@ -90,3 +90,36 @@ docker compose -f docker-compose.dev.yml up --build
 
 - `.dockerignore` keeps `node_modules` and secrets out of Docker build context.
 - This is a demo setup; do not use the included secrets in production.
+
+
+## Report PDF export (client-side)
+
+Reports can be exported as a **print-ready PDF (US Letter, portrait)** from the Reporting UI via the **Save as PDF** button.
+
+Implementation details:
+
+- Frontend-only export using:
+  - `jspdf` (PDF creation)
+  - `jspdf-autotable` (multi-page table rendering)
+- Output includes:
+  - Title + generated timestamp
+  - Optional filter summary lines
+  - Multi-page table as needed
+  - Page numbering in the lower-right corner on every page
+
+### Developer notes
+
+- PDF logic lives in: `client/src/utils/reportPdf.js`
+- The Reporting UI wiring lives in: `client/src/components/ReportRunner.jsx`
+- If your Docker build cache has an older client image, rebuild after installing dependencies:
+
+```bash
+docker compose build --no-cache client
+docker compose up
+```
+
+If you run locally (no Docker), install deps in the client:
+
+```bash
+npm --prefix client install
+```
