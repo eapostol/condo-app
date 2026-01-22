@@ -60,6 +60,33 @@ export default function ReportRunner({ role }) {
     if (reportId) run();
   }, [reportId]);
 
+  function buildFiltersSummary() {
+    const summary = [];
+    if (selected?.filters?.includes('property_id')) {
+      const name =
+        (filters.properties || []).find((p) => String(p.property_id) === String(propertyId))
+          ?.property_name || (propertyId ? propertyId : 'All');
+      summary.push(`Property: ${name}`);
+    }
+    if (selected?.filters?.includes('board_member_id')) {
+      const name =
+        (filters.boardMembers || []).find((u) => String(u.user_id) === String(boardMemberId))
+          ?.full_name || (boardMemberId ? boardMemberId : 'All');
+      summary.push(`Board member: ${name}`);
+    }
+    return summary;
+  }
+
+  async function onSavePdf() {
+    const { downloadReportPdf } = await import('../utils/reportPdf.js');
+    downloadReportPdf({
+      title: selected?.title || 'Report',
+      rows,
+      provider,
+      filtersSummary: buildFiltersSummary()
+    });
+  }
+
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -126,6 +153,15 @@ export default function ReportRunner({ role }) {
             disabled={loading}
           >
             {loading ? 'Running…' : 'Run'}
+          </button>
+
+          <button
+            className="border border-black text-black rounded px-3 py-1 text-sm"
+            onClick={onSavePdf}
+            disabled={loading || !selected}
+            title={!selected ? 'Select a report first' : 'Save a PDF copy of this report'}
+          >
+            Save as PDF
           </button>
         </div>
       </div>
