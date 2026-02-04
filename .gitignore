@@ -179,3 +179,8 @@ Desktop.ini
 
 # Already covered, but explicitly ignore log files again for clarity
 *.log
+
+# Patch and identifier files
+*.patch
+*.identifier
+
