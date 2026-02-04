@@ -47,3 +47,20 @@ docker compose down -v
 ---
 
 For more detail, open the PDF: **Condo-App_Docker_Setup_Guide_2026-01-16.pdf**
+
+
+2026-02-02
+
+## Running in Dev Mode (Vite + Hot Reload)
+
+This repo supports two Docker Compose modes:
+
+- **Production-style** (`docker-compose.yml`): builds the client and serves it from the API container.
+- **Development** (`docker-compose.dev.yml`): runs the Vite client separately for fast refresh/hot reload.
+
+### Start Dev Mode
+
+From the repo root (where `docker-compose.dev.yml` is located):
+
+```bash
+docker compose -f docker-compose.dev.yml up --build -d
