@@ -2,7 +2,7 @@
 
 ## Application Overview
 
-This is a **MERN stack** (MongoDB, Express, React, Node.js) condo management portal that provides role-based reporting and management features for condominium communities.
+This is a demo condo management portal built with a MERN-style application stack and a separate MySQL reporting database.
 
 **Key Features:**
 
@@ -16,8 +16,17 @@ This is a **MERN stack** (MongoDB, Express, React, Node.js) condo management por
 
 - **Frontend**: React 18 + Vite + TailwindCSS (Port 3000)
 - **Backend**: Node.js + Express (Port 5000)
-- **Databases**: MongoDB (Port 27017), MySQL 8.4 (Port 3307)
+- **Databases**:
+  - MongoDB (default port 27017)
+  - MySQL 8.4 (native install usually 3306; Docker host mapping uses 3307)
 - **Authentication**: JWT + Passport.js + OAuth
+
+---
+
+## Choose a Launch Mode
+
+- Use **(A) Native Launch on Windows 11** if you want to run Node, MongoDB, and MySQL directly on your machine.
+- Use **(B) Docker Container Launch (Development)** if you want the full stack in containers with hot reload.
 
 ---
 
@@ -51,11 +60,11 @@ This method runs the application directly on your Windows 11 machine without Doc
 3. **MySQL** (v8.4 or compatible)
    - Download from: <https://dev.mysql.com/downloads/mysql/>
    - Install and configure with:
-     - Root password: `root_password`
+     - Root password: `root_password` (or your own)
      - Database: `condo_mgmt`
      - User: `condo_app`
      - Password: `condo_app_pw`
-   - Initialize the database:
+   - Initialize the reporting database:
 
      ```powershell
      mysql -u root -p < server\db\mysql\init\01_schema.sql
@@ -69,13 +78,13 @@ This method runs the application directly on your Windows 11 machine without Doc
 1. **Install Dependencies**
 
    ```powershell
-   # Install all dependencies (root, server, client)
+   # Install root, server, and client dependencies
    npm run install:all
    ```
 
 2. **Configure Environment Variables**
 
-   Create `server\.env` file (copy from `.env.docker` and modify):
+   Create `server\.env` (you can copy from `server\.env.example` or your Docker env file and adjust values):
 
    ```env
    PORT=5000
@@ -85,14 +94,14 @@ This method runs the application directly on your Windows 11 machine without Doc
 
    REPORTING_PROVIDER=mysql
 
-   # MySQL Database (local)
+   # MySQL Database (local native install)
    MYSQL_HOST=localhost
    MYSQL_PORT=3306
    MYSQL_DATABASE=condo_mgmt
    MYSQL_USER=condo_app
    MYSQL_PASSWORD=condo_app_pw
 
-   # OAuth credentials (use existing or configure your own)
+   # OAuth credentials (configure your own if needed)
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
    GOOGLE_CALLBACK_URL=/api/auth/google/callback
@@ -103,21 +112,23 @@ This method runs the application directly on your Windows 11 machine without Doc
    MICROSOFT_TENANT=common
    ```
 
-3. **Seed the Database (Optional)**
+3. **Seed MongoDB Demo Data (Optional)**
+
+   From the repo root:
 
    ```powershell
-   npm run seed
+   npm --prefix server run seed
    ```
 
 ### Launch the Application
 
-#### Option 1: Run Both Server and Client Togethe (Recommended)
+#### Option 1: Run Server and Client Together (Recommended)
 
 ```powershell
 npm run dev
 ```
 
-This uses `concurrently` to run both server and client with hot-reload.
+This runs both backend and frontend using `concurrently` with hot reload.
 
 #### Option 2: Run Server and Client Separately
 
@@ -133,17 +144,6 @@ npm run dev:server
 npm run dev:client
 ```
 
-### Access the Application
-
-- **Frontend**: <http://localhost:3000>
-- **Backend API**: <http://localhost:5000/api>
-- **Swagger API Docs**: <http://localhost:5000/api/docs>
-
-### Demo Credentials
-
-- **Manager Account**: `manager1` / `Password123!`
-- **Board Member Account**: `board1` / `Password123!`
-
 ### Stopping the Application
 
 - Press `Ctrl + C` in each terminal window
@@ -152,12 +152,12 @@ npm run dev:client
 
 ## (B) Docker Container Launch (Development)
 
-This method runs the entire application stack in Docker containers with hot-reload support for development.
+This method runs the full development stack in Docker containers with hot-reload support.
 
 ### Prerequisites
 
 1. **Docker Desktop** for Windows
-   - Download from: https://www.docker.com/products/docker-desktop/
+   - Download from: <https://www.docker.com/products/docker-desktop/>
    - Ensure Docker is running (check system tray icon)
    - Verify installation:
 
@@ -168,13 +168,13 @@ This method runs the entire application stack in Docker containers with hot-relo
 
 ### Launch Steps
 
-1. **Navigate to Project Directory**
+1. **Navigate to the project directory**
 
    ```powershell
-   cd d:\projects\2025\condo-project\app
+   cd <path-to-your-project>\condo-app
    ```
 
-2. **Start the Development Environment**
+2. **Start the development environment**
 
    ```powershell
    docker compose -f docker-compose.dev.yml up --build -d
@@ -182,78 +182,61 @@ This method runs the entire application stack in Docker containers with hot-relo
 
    **What this does:**
    - Builds and starts 4 containers: `client`, `api`, `mongo`, `mysql`
-   - Mounts local source code for hot-reload
-   - Seeds database with sample data on first start
+   - Mounts local source code for hot reload
+   - Seeds MongoDB demo data on first start (via seed-once behavior)
    - Exposes ports for local access
 
-3. **Wait for Startup**
-   - First run takes 5-10 minutes (downloading images, building)
-   - Watch for log messages indicating services are ready
-   - Look for: `Server listening on port 5000` and `Vite ready`
-
-### Access the Application
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000/api
-- **Swagger API Docs**: http://localhost:5000/api/docs
-- **MongoDB**: `mongodb://localhost:27017`
-- **MySQL**: `localhost:3307` (user: `condo_app`, password: `condo_app_pw`)
-
-### Demo Credentials
-
-- **Manager Account**: `manager1` / `Password123!`
-- **Board Member Account**: `board1` / `Password123!`
+3. **Wait for startup**
+   - First run may take several minutes (image pulls + builds)
+   - Check logs for readiness messages from API and Vite
 
 ### Development Features
 
-- **Hot Reload**: Code changes in `client/` and `server/` folders automatically reload
+- **Hot Reload**: Changes in `client/` and `server/` automatically reload
 - **Volume Mounting**: Local files are mounted, so edits persist
-- **Database Persistence**: Data persists across container restarts (stored in Docker volumes)
+- **Database Persistence**: Data persists across container restarts in Docker volumes
 
-### Useful Commands
+### Useful Docker Commands
 
-**View Running Containers:**
+**View running containers:**
 
 ```powershell
 docker compose -f docker-compose.dev.yml ps
 ```
 
-**View Logs:**
+**View logs:**
 
 ```powershell
 # All services
 docker compose -f docker-compose.dev.yml logs -f
 
-# Specific service
+# Specific services
 docker compose -f docker-compose.dev.yml logs -f api
 docker compose -f docker-compose.dev.yml logs -f client
 ```
 
-**Stop the Application:**
+**Stop the application:**
 
 ```powershell
 # Graceful stop (keeps data)
 docker compose -f docker-compose.dev.yml down
-
-# Force stop
-Ctrl + C (in terminal where compose is running)
 ```
 
-**Complete Reset (Remove All Data):**
+**Complete reset (remove all Docker data for this stack):**
 
 ```powershell
 docker compose -f docker-compose.dev.yml down -v
 ```
 
-⚠️ This removes all volumes including database data!
+This removes volumes, including database data.
 
-**Rebuild After Major Changes:**
+**Rebuild after major changes:**
 
 ```powershell
 docker compose -f docker-compose.dev.yml up --build --force-recreate
 ```
 
-**Access Container Shell:**
+**Access container shells:**
 
 ```powershell
 # API server
@@ -266,15 +249,38 @@ docker compose -f docker-compose.dev.yml exec client sh
 docker compose -f docker-compose.dev.yml exec mysql mysql -u condo_app -pcondo_app_pw condo_mgmt
 ```
 
-### Production Docker Setup
+### Production-Style Docker Setup (Demo)
 
-For production deployment (single container):
+To run the production-style compose setup from the repo root:
 
 ```powershell
 docker compose up --build
 ```
 
-This uses `docker-compose.yml` which builds a production-optimized bundle.
+This uses `docker-compose.yml`, which builds the client and serves the built frontend from the API container while still running separate MongoDB/MySQL services.
+
+---
+
+## Common Access URLs
+
+### Native Launch
+
+- **Frontend**: <http://localhost:3000>
+- **Backend API**: <http://localhost:5000/api>
+- **Swagger API Docs**: <http://localhost:5000/api/docs>
+
+### Docker Development Launch
+
+- **Frontend**: <http://localhost:3000>
+- **Backend API**: <http://localhost:5000/api>
+- **Swagger API Docs**: <http://localhost:5000/api/docs>
+- **MongoDB**: `mongodb://localhost:27017`
+- **MySQL**: `localhost:3307` (user: `condo_app`, password: `condo_app_pw`)
+
+## Demo Credentials
+
+- **Manager Account**: `manager1` / `Password123!`
+- **Board Member Account**: `board1` / `Password123!`
 
 ---
 
@@ -282,7 +288,7 @@ This uses `docker-compose.yml` which builds a production-optimized bundle.
 
 ### Native Launch Issues
 
-**MongoDB Connection Failed:**
+**MongoDB connection failed:**
 
 ```powershell
 # Check if MongoDB is running
@@ -292,7 +298,7 @@ net start MongoDB
 "C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe" --dbpath="C:\data\db"
 ```
 
-**MySQL Connection Failed:**
+**MySQL connection failed:**
 
 ```powershell
 # Check if MySQL is running
@@ -302,7 +308,7 @@ Get-Service -Name MySQL*
 net start MySQL80
 ```
 
-**Port Already in Use:**
+**Port already in use:**
 
 ```powershell
 # Find what's using port 3000 or 5000
@@ -315,36 +321,35 @@ taskkill /PID <process_id> /F
 
 ### Docker Issues
 
-**Docker Desktop Not Running:**
+**Docker Desktop not running:**
 
-- Open Docker Desktop and wait for "Docker Desktop is running" message
-- Check system tray icon is green
+- Open Docker Desktop and wait for it to finish starting
+- Confirm the tray icon indicates Docker is running
 
-**Port Conflicts:**
+**Port conflicts:**
 
-- Ports 3000, 5000, 27017, 3307 must be available
-- Modify ports in `docker-compose.dev.yml` if needed
+- Ports `3000`, `5000`, `27017`, and `3307` must be available
+- Change port mappings in `docker-compose.dev.yml` if needed
 
-**Build Failures:**
+**Build failures:**
 
 ```powershell
-# Clean Docker cache and rebuild
+# Clean Docker cache and rebuild (destructive to unused images/cache)
 docker system prune -a
 docker compose -f docker-compose.dev.yml build --no-cache
 ```
 
-**Volume Permission Issues:**
+**Volume permission or stale state issues:**
 
 ```powershell
-# Remove volumes and recreate
 docker compose -f docker-compose.dev.yml down -v
 docker compose -f docker-compose.dev.yml up --build
 ```
 
-**Slow Performance on Windows:**
+**Slow performance on Windows:**
 
-- Ensure WSL 2 backend is enabled in Docker Desktop settings
-- Move project to WSL filesystem for better performance
+- Ensure Docker Desktop is using the WSL 2 backend
+- Consider storing the project in the WSL filesystem for better I/O performance
 
 ---
 
@@ -354,36 +359,37 @@ docker compose -f docker-compose.dev.yml up --build
 app/
 ├── client/                 # React frontend (Vite)
 │   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   ├── pages/         # Page components
-│   │   └── utils/         # Utilities (PDF generation)
-│   ├── Dockerfile.dev     # Dev container
+│   │   ├── components/     # Reusable components
+│   │   ├── pages/          # Page components
+│   │   └── utils/          # Utilities (PDF generation)
+│   ├── Dockerfile.dev      # Dev container
 │   └── package.json
-├── server/                # Express backend
+├── server/                 # Express backend
 │   ├── src/
-│   │   ├── config/       # Database & passport config
-│   │   ├── controllers/  # Route controllers
-│   │   ├── middleware/   # Auth middleware
-│   │   ├── models/       # Mongoose models
-│   │   ├── routes/       # API routes
-│   │   └── services/     # Business logic
-│   ├── db/mysql/init/    # MySQL schema & seed data
-│   ├── Dockerfile.dev    # Dev container
-│   └── server.js         # Entry point
-├── docker-compose.yml     # Production compose
-├── docker-compose.dev.yml # Development compose
-└── package.json          # Root package (scripts)
+│   │   ├── config/         # Database & passport config
+│   │   ├── controllers/    # Route controllers
+│   │   ├── middleware/     # Auth middleware
+│   │   ├── models/         # Mongoose models
+│   │   ├── routes/         # API routes
+│   │   └── services/       # Business logic
+│   ├── db/mysql/init/      # MySQL schema, sample data, and reporting views
+│   ├── Dockerfile.dev      # Dev container
+│   └── server.js           # Entry point
+├── docker-compose.yml      # Production-style compose
+├── docker-compose.dev.yml  # Development compose (hot reload)
+└── package.json            # Root package scripts
 ```
 
 ---
 
 ## Additional Notes
 
-- **Database Provider**: Set `REPORTING_PROVIDER=mysql` or `REPORTING_PROVIDER=mongo` in environment
-- **OAuth**: Configure your own OAuth credentials for Google/Microsoft login
-- **API Documentation**: Swagger UI available at `/api/docs`
-- **Seed Data**: Automatically seeded in Docker, manually run `npm run seed` for native
+- **Reporting Provider**: `REPORTING_PROVIDER=mysql` is the working/default setup.
+- **Mongo Reporting Provider**: `REPORTING_PROVIDER=mongo` exists as a code path, but reporting queries are not fully implemented yet.
+- **OAuth**: Configure your own Google/Microsoft OAuth credentials if using social login.
+- **API Documentation**: Swagger UI is available at `/api/docs`.
+- **Seed Data**: Docker dev uses seed-once behavior; native launch can use `npm --prefix server run seed`.
 
 ---
 
-**Last Updated**: February 3, 2026
+**Last Updated**: February 23, 2026
