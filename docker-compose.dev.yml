@@ -5,7 +5,7 @@ services:
       dockerfile: server/Dockerfile.dev
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5001:5000"
     env_file:
       - ./server/.env.docker
     environment:
@@ -32,8 +32,7 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=200
-      # Optional override; client code defaults to http://localhost:5000/api
-      # - VITE_API_URL=http://localhost:5000/api
+      - VITE_API_URL=http://localhost:5001/api
     volumes:
       - ./client:/app/client
       - client_node_modules:/app/client/node_modules
