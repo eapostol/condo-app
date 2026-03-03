@@ -32,6 +32,7 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=200
+      # Explicitly point the Vite client at the API service as exposed by docker-compose (host port 5001 -> api:5000)
       - VITE_API_URL=http://localhost:5001/api
     volumes:
       - ./client:/app/client
