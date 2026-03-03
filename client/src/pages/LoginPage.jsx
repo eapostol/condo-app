@@ -22,7 +22,7 @@ export default function LoginPage() {
     }
   };
 
-  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
   return (
     <div className="max-w-md mx-auto bg-white shadow rounded p-6 mt-10">
