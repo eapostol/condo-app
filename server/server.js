@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import dns from 'node:dns';
+import http from 'node:http';
+import https from 'node:https';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -15,6 +18,33 @@ import reportRoutes from './src/routes/reportRoutes.js';
 
 
 dotenv.config();
+
+// ---- Docker Desktop / Windows note ----
+// Some Docker networks have no IPv6 route, but DNS can return IPv6 (AAAA) first.
+// Microsoft OAuth token exchange may fail with ENETUNREACH when Node tries IPv6.
+// We prefer IPv4-first always, and (optionally) force IPv4 when FORCE_IPV4=true.
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (_) {
+  // Node < 17 may not support this; safe to ignore.
+}
+
+if (process.env.FORCE_IPV4 === 'true') {
+  const lookupIpv4 = (hostname, options, callback) => {
+    // Support both (hostname, cb) and (hostname, options, cb)
+    if (typeof options === 'function') {
+      return dns.lookup(hostname, { family: 4 }, options);
+    }
+    return dns.lookup(hostname, { ...(options || {}), family: 4 }, callback);
+  };
+
+  // Force IPv4 for outbound HTTP(S) requests (includes Passport OAuth token exchange)
+  http.globalAgent.options.family = 4;
+  https.globalAgent.options.family = 4;
+  http.globalAgent.options.lookup = lookupIpv4;
+  https.globalAgent.options.lookup = lookupIpv4;
+}
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;

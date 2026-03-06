@@ -8,6 +8,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017/condo_app
       - JWT_SECRET=change_me_in_production
       - CLIENT_URL=http://localhost:3000
+      - MICROSOFT_CALLBACK_URL=http://localhost:5000/api/auth/microsoft/callback
 
       # Reporting provider selection (mysql | mongo)
       - REPORTING_PROVIDER=mysql
@@ -48,7 +49,7 @@ services:
     ports:
       - "127.0.0.1:3307:3306"
     env_file:
-      - ./server/.env.docker
+      - ./.env.docker
     environment:
       - MYSQL_ROOT_PASSWORD=root_password
       - MYSQL_DATABASE=condo_mgmt
