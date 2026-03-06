@@ -15,8 +15,8 @@ docker compose -f docker-compose.dev.yml up --build
 
 Open in your browser:
 
-- **Client (Vite / React):** http://localhost:3000  
-- **API (Express):** http://localhost:5000  
+- **Client (Vite / React):** http://localhost:3000
+- **API (Express):** http://localhost:5000
 
 ### Start Dev Mode (Detached)
 
@@ -41,6 +41,38 @@ docker compose -f docker-compose.dev.yml ps
 ```bash
 docker compose -f docker-compose.dev.yml logs -f client
 docker compose -f docker-compose.dev.yml logs -f api
+```
+
+### Windows Pipe Error (`dockerDesktopLinuxEngine`) Fix
+
+If PowerShell shows this while starting containers:
+
+```text
+unable to get image 'mongo:7': error during connect: Get "http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/...": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+```
+
+The Docker client cannot connect to Docker Desktop's Linux engine (not an image/tag problem).
+
+Run these checks in PowerShell:
+
+```powershell
+docker version
+docker context ls
+docker context use default
+docker info
+```
+
+Then confirm Docker Desktop is running and healthy. If needed, restart Docker Desktop or restart the service from elevated PowerShell:
+
+```powershell
+Restart-Service com.docker.service
+```
+
+Retry:
+
+```powershell
+docker compose -f docker-compose.dev.yml pull mongo
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 ---
@@ -80,16 +112,15 @@ $PROFILE
 - If you ran **dev mode** (`docker-compose.dev.yml`) → use **http://localhost:3000**
 - If you ran **production-style** (`docker-compose.yml`) → the client is served by the API and you should use **http://localhost:5000**
 
-
 ## zsh (macOS default, also common on Linux)
 
 Add a persistent alias
-
 
 ```bash
 echo 'alias dcd="docker compose -f docker-compose.dev.yml up --build -d"' >> ~/.zshrc
 source ~/.zshrc
 ```
+
 Use it
 
 From your repo root:
@@ -99,12 +130,14 @@ dcd
 ```
 
 ## bash (Ubuntu default, sometimes macOS)
+
 Add a persistent alias
 
 ```bash
 echo 'alias dcd="docker compose -f docker-compose.dev.yml up --build -d"' >> ~/.bashrc
 source ~/.bashrc
 ```
+
 Use it
 
 ```bash
@@ -121,17 +154,21 @@ source ~/.bash_profile
 ## Optional “nice to have” helpers (recommended)
 
 ## Down
+
 ```bash
 echo 'alias dcddown="docker compose -f docker-compose.dev.yml down"' >> ~/.zshrc
 source ~/.zshrc
 ```
+
 Logs (follow)
+
 ```bash
 echo 'alias dcdlogs="docker compose -f docker-compose.dev.yml logs -f"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 Usage:
+
 ```bash
 dcddown
 dcdlogs client
@@ -139,7 +176,6 @@ dcdlogs api
 ```
 
 (If you’re using bash, replace ~/.zshrc with ~/.bashrc in the lines above.)
-
 
 ## Make it work from anywhere (not just repo root)
 
