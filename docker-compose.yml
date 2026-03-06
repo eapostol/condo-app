@@ -8,6 +8,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017/condo_app
       - JWT_SECRET=change_me_in_production
       - CLIENT_URL=http://localhost:3000
+      - MICROSOFT_CALLBACK_URL=http://localhost:5000/api/auth/microsoft/callback
 
       # Reporting provider selection (mysql | mongo)
       - REPORTING_PROVIDER=mysql

@@ -184,3 +184,7 @@ Desktop.ini
 *.patch
 *.identifier
 
+# pdfs
+*.pdf
+
+
