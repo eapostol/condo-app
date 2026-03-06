@@ -16,7 +16,7 @@ docker compose -f docker-compose.dev.yml up --build
 Open in your browser:
 
 - **Client (Vite / React):** http://localhost:3000
-- **API (Express):** http://localhost:5000
+- **API (Express):** http://localhost:5001
 
 ### Start Dev Mode (Detached)
 
@@ -110,7 +110,7 @@ $PROFILE
 ## Which URL should I use?
 
 - If you ran **dev mode** (`docker-compose.dev.yml`) → use **http://localhost:3000**
-- If you ran **production-style** (`docker-compose.yml`) → the client is served by the API and you should use **http://localhost:5000**
+- If you ran **production-style** (`docker-compose.yml`) → the client is served by the API and you should use **http://localhost:5001**
 
 ## zsh (macOS default, also common on Linux)
 
