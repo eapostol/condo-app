@@ -18,8 +18,10 @@ services:
       - ./server:/app/server
       - api_node_modules:/app/server/node_modules
     depends_on:
-      - mongo
-      - mysql
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
 
   client:
     build:
@@ -47,6 +49,16 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:27017/admin | grep 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
   mysql:
     image: mysql:8.4
@@ -61,6 +73,16 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./server/db/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
   api_node_modules:
