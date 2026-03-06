@@ -5,7 +5,7 @@ services:
       dockerfile: server/Dockerfile.dev
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5001:5000"
     env_file:
       - ./server/.env.docker
     environment:
@@ -21,8 +21,10 @@ services:
       - ./server:/app/server
       - api_node_modules:/app/server/node_modules
     depends_on:
-      - mongo
-      - mysql
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
 
   client:
     build:
@@ -35,8 +37,8 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=200
-      # Optional override; client code defaults to http://localhost:5000/api
-      # - VITE_API_URL=http://localhost:5000/api
+      # Explicitly point the Vite client at the API service as exposed by docker-compose (host port 5001 -> api:5000)
+      - VITE_API_URL=http://localhost:5001/api
     volumes:
       - ./client:/app/client
       - client_node_modules:/app/client/node_modules
@@ -50,6 +52,16 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:27017/admin | grep 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
   mysql:
     image: mysql:8.4
@@ -64,6 +76,16 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./server/db/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
   api_node_modules:
