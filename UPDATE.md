@@ -193,9 +193,9 @@ This method runs the entire application stack in Docker containers with hot-relo
 
 ### Access the Application from Docker
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000/api
-- **Swagger API Docs**: http://localhost:5000/api/docs
+- **Frontend**: <http://localhost:3000>
+- **Backend API**: <http://localhost:5000/api>
+- **Swagger API Docs**: <http://localhost:5000/api/docs>
 - **MongoDB**: `mongodb://localhost:27017`
 - **MySQL**: `localhost:3307` (user: `condo_app`, password: `condo_app_pw`)
 
