@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Condo Desktop Launcher</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel">
+        <p class="eyebrow">Condo Management Portal</p>
+        <h1>Desktop Launcher</h1>
+        <p class="intro">
+          Start or stop the local Docker application without using a terminal.
+        </p>
+
+        <div class="status-card">
+          <div class="status-row">
+            <span class="status-label">Status</span>
+            <span id="status-pill" class="status-pill status-stopped">Stopped</span>
+          </div>
+          <p id="status-message" class="status-message">Checking launcher environment...</p>
+          <p id="status-error" class="status-error hidden"></p>
+        </div>
+
+        <div class="actions">
+          <button id="start-button" class="primary">Start</button>
+          <button id="stop-button" class="secondary">Stop</button>
+          <button id="close-button" class="ghost">Close</button>
+        </div>
+
+        <p class="footnote">
+          Docker Desktop must already be installed on this computer.
+        </p>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

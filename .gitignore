@@ -187,4 +187,7 @@ Desktop.ini
 # pdfs
 *.pdf
 
+# Desktop launcher build outputs
+releases/
+
 
