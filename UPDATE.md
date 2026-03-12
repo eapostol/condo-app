@@ -75,7 +75,7 @@ This method runs the application directly on your Windows 11 machine without Doc
 
 2. **Configure Environment Variables**
 
-   Create `server\.env` file (copy from `.env.docker` and modify):
+   Create `server\.env` file (copy from `.\.env.docker` at the repository root and modify):
 
    ```env
    PORT=5000
@@ -199,7 +199,7 @@ This method runs the entire application stack in Docker containers with hot-relo
 - **MongoDB**: `mongodb://localhost:27017`
 - **MySQL**: `localhost:3307` (user: `condo_app`, password: `condo_app_pw`)
 
-### Demo Credentials
+### Demo Credentials to use App
 
 - **Manager Account**: `manager1` / `Password123!`
 - **Board Member Account**: `board1` / `Password123!`
