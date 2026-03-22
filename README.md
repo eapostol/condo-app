@@ -24,8 +24,10 @@ To close only the launcher window, click `Close`. If the app is still running, t
 
 ## Login
 
-- Manager: `manager1` / `Password123!`
-- Board: `board1` / `Password123!`
+For local sign-in, use the seeded email address and password below. Usernames such as `manager1` and `board1` are not accepted in the email field.
+
+- Manager: `manager@example.com` / `Password123!`
+- Board: `board@example.com` / `Password123!`
 
 ## Manual Desktop Docker Commands
 
@@ -58,6 +60,7 @@ bash scripts/desktop/test-macos.sh
 ```
 
 Run the script from a local copy of the repo on the Mac, not directly from a network share.
+The script also removes any prior desktop test containers and volumes before packaging a fresh launcher bundle.
 
 ### Development Mode
 
@@ -87,3 +90,4 @@ docker compose down -v
 ## Maintainers
 
 Desktop image packaging and release steps are documented in [DESKTOP_LAUNCHER_RELEASE.md](./DESKTOP_LAUNCHER_RELEASE.md).
+

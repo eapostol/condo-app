@@ -20,9 +20,11 @@ let launcherState = {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 460,
-    height: 440,
-    resizable: false,
+    width: 760,
+    height: 680,
+    minWidth: 520,
+    minHeight: 520,
+    resizable: true,
     autoHideMenuBar: true,
     backgroundColor: "#f4efe6",
     webPreferences: {
