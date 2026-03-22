@@ -24,8 +24,10 @@ To close only the launcher window, click `Close`. If the app is still running, t
 
 ## Login
 
-- Manager: `manager1` / `Password123!`
-- Board: `board1` / `Password123!`
+For local sign-in, use the seeded email address and password below. Usernames such as `manager1` and `board1` are not accepted in the email field.
+
+- Manager: `manager@example.com` / `Password123!`
+- Board: `board@example.com` / `Password123!`
 
 ## Manual Desktop Docker Commands
 
