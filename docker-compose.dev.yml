@@ -80,12 +80,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent",
         ]
       interval: 5s
       timeout: 5s
-      retries: 30
-      start_period: 20s
+      retries: 60
+      start_period: 60s
 
 volumes:
   api_node_modules:
