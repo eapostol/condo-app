@@ -1,0 +1,71 @@
+name: condo-desktop
+
+services:
+  app:
+    image: ${CONDO_APP_IMAGE}
+    restart: unless-stopped
+    ports:
+      - "3000:5000"
+    env_file:
+      - ./.env.docker
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/condo_app
+      - JWT_SECRET=change_me_in_production
+      - CLIENT_URL=http://localhost:3000
+      - MICROSOFT_CALLBACK_URL=http://localhost:3000/api/auth/microsoft/callback
+      - REPORTING_PROVIDER=mysql
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=condo_mgmt
+      - MYSQL_USER=condo_app
+      - MYSQL_PASSWORD=condo_app_pw
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:27017/admin | grep 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file:
+      - ./.env.docker
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=condo_mgmt
+      - MYSQL_USER=condo_app
+      - MYSQL_PASSWORD=condo_app_pw
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./server/db/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+volumes:
+  mongo-data:
+  mysql-data:

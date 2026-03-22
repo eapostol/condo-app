@@ -65,6 +65,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/condo', condoRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // TODO: ensure that vite build in production is served
 // const clientBuildPath = path.join(__dirname, "..", "client", "dist");

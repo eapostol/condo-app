@@ -1,40 +1,77 @@
-# Condo Management Portal (Demo) — Docker Setup Guide
+# Condo Management Portal
 
-## Overview
+## End-User Launch
 
-This package is a **demo** condo-management web portal. It runs entirely in Docker.
+This project now supports a desktop launcher for non-technical users.
 
-## What You Do (Quick Start)
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for your operating system.
+2. Download the OS-specific release zip prepared by the maintainer.
+3. Unzip the package.
+4. Open the `Desktop Launcher` folder inside the unzipped package.
+5. Run the launcher for your platform.
+6. Click `Start`.
 
-1. (one-time only) Install the version of [Docker Desktop](https://www.docker.com/products/docker-desktop/) appropriate for your operating system.
-2. Unzip this folder.
-3. Run this single command in the unzipped folder:
+The launcher will:
 
-   ```bash
-   docker compose up --build
-   ```
+- verify Docker Desktop is available
+- pull the pinned Docker image from Docker Hub
+- start the local containers in the background
+- open your browser to [http://localhost:3000](http://localhost:3000) when the app is ready
 
-4. Open the app in your browser:
+To stop the app, reopen the launcher and click `Stop`.
 
-- [http://localhost:3000](http://localhost:3000)
+To close only the launcher window, click `Close`. If the app is still running, the launcher will ask whether to keep it running or stop it first.
 
-## Login (demo accounts)
+## Login
 
-- **Manager login**: `manager1` / `Password123!`
-- **Board login**: `board1` / `Password123!`
+- Manager: `manager1` / `Password123!`
+- Board: `board1` / `Password123!`
 
-## How to stop
+## Manual Desktop Docker Commands
 
-- In the same terminal window: press **Ctrl + C**
-- Then run:
+If you ever need the manual fallback for the desktop stack:
 
 ```bash
-docker compose down
+docker compose --env-file desktop.env -f docker-compose.desktop.yml up -d
 ```
 
-## If you need a full reset
+To stop it:
 
-This removes the demo databases and returns the app to a clean state:
+```bash
+docker compose --env-file desktop.env -f docker-compose.desktop.yml down
+```
+
+## Developer Workflows
+
+This repo now has three Docker Compose entry points:
+
+- `docker-compose.yml`: production-style local build
+- `docker-compose.dev.yml`: Vite hot reload development stack
+- `docker-compose.desktop.yml`: end-user launcher stack that pulls a pinned image
+
+### macOS Launcher Test
+
+To package and open the macOS launcher from a Mac test machine, run:
+
+```bash
+bash scripts/desktop/test-macos.sh
+```
+
+Run the script from a local copy of the repo on the Mac, not directly from a network share.
+
+### Development Mode
+
+```bash
+docker compose -f docker-compose.dev.yml up --build -d
+```
+
+### Production-Style Local Build
+
+```bash
+docker compose up --build
+```
+
+### Reset Local Data
 
 ```bash
 docker compose down -v
@@ -42,61 +79,11 @@ docker compose down -v
 
 ## Troubleshooting
 
-- **Docker says it isn’t running**: open Docker Desktop and wait until it’s “Running”.
-- **Port already in use**: something is already using port 3000. Close that app or change ports in `docker-compose.yml`.
-- **First run takes a while**: that’s normal; Docker is building images.
+- Docker Desktop must be open and fully running before the launcher can start the app.
+- If port `3000` is already in use, the launcher will fail until that port is free.
+- The first launch can take a while because Docker may need to pull images.
+- If the launcher says Docker is installed but not running, open Docker Desktop and wait until it reports that the engine is running.
 
-### Windows PowerShell: `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`
+## Maintainers
 
-If you see an error similar to:
-
-```text
-unable to get image 'mongo:7': error during connect: Get "http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/...": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
-```
-
-This means Docker CLI cannot reach the Docker Desktop Linux engine. The issue is usually Docker Desktop not running yet, the Linux engine not selected, or Docker context mismatch.
-
-In **PowerShell**, run:
-
-```powershell
-docker version
-docker context ls
-docker context use default
-docker info
-```
-
-Then make sure Docker Desktop is open and shows **Engine running**. If needed, restart Docker Desktop.
-
-If it still fails, restart Docker services from an elevated PowerShell:
-
-```powershell
-Restart-Service com.docker.service
-```
-
-After Docker is healthy, retry from repo root:
-
-```powershell
-docker compose -f docker-compose.dev.yml pull mongo
-docker compose -f docker-compose.dev.yml up --build
-```
-
----
-
-For more detail, open the PDF: **Condo-App_Docker_Setup_Guide_2026-01-16.pdf**
-
-2026-02-02
-
-## Running in Dev Mode (Vite + Hot Reload)
-
-This repo supports two Docker Compose modes:
-
-- **Production-style** (`docker-compose.yml`): builds the client and serves it from the API container.
-- **Development** (`docker-compose.dev.yml`): runs the Vite client separately for fast refresh/hot reload.
-
-### Start Dev Mode
-
-From the repo root (where `docker-compose.dev.yml` is located):
-
-```bash
-docker compose -f docker-compose.dev.yml up --build -d
-```
+Desktop image packaging and release steps are documented in [DESKTOP_LAUNCHER_RELEASE.md](./DESKTOP_LAUNCHER_RELEASE.md).
