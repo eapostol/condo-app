@@ -26,7 +26,7 @@ body {
 }
 
 .panel {
-  width: min(100%, 400px);
+  width: min(100%, 720px);
   background: rgba(255, 250, 241, 0.92);
   border: 1px solid rgba(110, 86, 52, 0.14);
   border-radius: 22px;
@@ -111,6 +111,10 @@ h1 {
   color: #872f24;
   line-height: 1.45;
   white-space: pre-wrap;
+  overflow: auto;
+  max-height: min(38vh, 280px);
+  font-family: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.92rem;
 }
 
 .status-message {

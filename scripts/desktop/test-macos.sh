@@ -82,15 +82,19 @@ cd "${REPO_ROOT}"
 unset ELECTRON_RUN_AS_NODE || true
 
 echo
-echo "1. Installing dependencies"
+echo "1. Cleaning any previous desktop test stack"
+docker compose --env-file desktop.env -f docker-compose.desktop.yml down -v >/dev/null 2>&1 || true
+
+echo
+echo "2. Installing dependencies"
 npm run install:all
 
 echo
-echo "2. Packaging macOS launcher"
+echo "3. Packaging macOS launcher"
 npm --prefix launcher run package:mac -- --arch="${MAC_ARCH}"
 
 echo
-echo "3. Assembling macOS release zip"
+echo "4. Assembling macOS release zip"
 npm run desktop:release:mac
 
 if [[ ! -f "${RELEASE_ZIP}" ]]; then
@@ -99,7 +103,7 @@ if [[ ! -f "${RELEASE_ZIP}" ]]; then
 fi
 
 echo
-echo "4. Extracting release bundle to ${TEST_ROOT}"
+echo "5. Extracting release bundle to ${TEST_ROOT}"
 rm -rf "${TEST_ROOT}"
 mkdir -p "${TEST_ROOT}"
 ditto -x -k "${RELEASE_ZIP}" "${TEST_ROOT}"
@@ -111,7 +115,7 @@ if [[ -z "${APP_PATH}" ]]; then
 fi
 
 echo
-echo "5. Opening launcher app"
+echo "6. Opening launcher app"
 open "${APP_PATH}"
 
 echo
@@ -123,3 +127,4 @@ echo "Next steps:"
 echo "- If macOS blocks the app, right-click it in Finder and choose Open."
 echo "- In the launcher, click Start."
 echo "- The app should open at http://localhost:3000"
+echo "- If Docker reports a read-only volume error, restart Docker Desktop and rerun this script."

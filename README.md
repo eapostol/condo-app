@@ -58,6 +58,7 @@ bash scripts/desktop/test-macos.sh
 ```
 
 Run the script from a local copy of the repo on the Mac, not directly from a network share.
+The script also removes any prior desktop test containers and volumes before packaging a fresh launcher bundle.
 
 ### Development Mode
 
@@ -87,3 +88,4 @@ docker compose down -v
 ## Maintainers
 
 Desktop image packaging and release steps are documented in [DESKTOP_LAUNCHER_RELEASE.md](./DESKTOP_LAUNCHER_RELEASE.md).
+
