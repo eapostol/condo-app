@@ -18,10 +18,18 @@
         <div class="status-card">
           <div class="status-row">
             <span class="status-label">Status</span>
-            <span id="status-pill" class="status-pill status-stopped">Stopped</span>
+            <div class="status-meta">
+              <span id="progress-value" class="progress-value">0%</span>
+              <span id="status-pill" class="status-pill status-stopped">Stopped</span>
+            </div>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress-bar" class="progress-bar"></div>
           </div>
           <p id="status-message" class="status-message">Checking launcher environment...</p>
+          <p id="status-detail" class="status-detail hidden"></p>
           <p id="status-error" class="status-error hidden"></p>
+          <p id="log-path" class="log-path hidden"></p>
         </div>
 
         <div class="actions">

@@ -11,7 +11,9 @@ services:
     environment:
       - NODE_ENV=development
       - SEED_ON_START=true
-      - MICROSOFT_CALLBACK_URL=http://localhost:5001/api/auth/microsoft/callback
+      - CLIENT_URL=http://localhost:3000
+      - GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
+      - MICROSOFT_CALLBACK_URL=http://localhost:3000/api/auth/microsoft/callback
       - NODE_OPTIONS=--dns-result-order=ipv4first
       - FORCE_IPV4=true
       # Helps file watching behave on some Windows/Mac setups
@@ -37,8 +39,8 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=200
-      # Explicitly point the Vite client at the API service as exposed by docker-compose (host port 5001 -> api:5000)
-      - VITE_API_URL=http://localhost:5001/api
+      # Keep the browser on localhost:3000 and let the Vite dev proxy forward /api to the backend
+      - VITE_API_URL=/api
     volumes:
       - ./client:/app/client
       - client_node_modules:/app/client/node_modules

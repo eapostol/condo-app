@@ -76,6 +76,20 @@ h1 {
   color: #463b31;
 }
 
+.status-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-value {
+  min-width: 3ch;
+  text-align: right;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6b5743;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -112,15 +126,48 @@ h1 {
   line-height: 1.45;
   white-space: pre-wrap;
   overflow: auto;
-  max-height: min(38vh, 280px);
+  max-height: min(34vh, 240px);
   font-family: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
   font-size: 0.92rem;
+}
+
+.progress-track {
+  position: relative;
+  margin-top: 14px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(140, 107, 63, 0.14);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8c6b3f 0%, #315f3d 100%);
+  transition: width 180ms ease;
 }
 
 .status-message {
   margin: 14px 0 0;
   color: #463b31;
   line-height: 1.5;
+}
+
+.status-detail,
+.log-path {
+  margin: 10px 0 0;
+  color: #6b5743;
+  line-height: 1.45;
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.log-path {
+  font-family: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.8rem;
+  color: #7a6854;
 }
 
 .actions {

@@ -1,22 +1,64 @@
 const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 const APP_URL = "http://localhost:3000";
 const HEALTH_URL = `${APP_URL}/api/health`;
 const STARTUP_TIMEOUT_MS = 120000;
 const HEALTH_POLL_INTERVAL_MS = 2000;
+const DOCKER_IDLE_TIMEOUT_MS = 180000;
 
 let mainWindow = null;
 let isClosing = false;
 let currentAction = Promise.resolve();
 let projectPaths = null;
+let logFilePath = "";
 let launcherState = {
   status: "Stopped",
+  phase: "Idle",
+  progressPercent: 0,
   message: "Checking launcher environment...",
-  lastError: ""
+  detail: "",
+  lastError: "",
+  logPath: ""
 };
+
+function ensureLogFilePath() {
+  if (!app.isReady()) {
+    return "";
+  }
+
+  if (logFilePath) {
+    return logFilePath;
+  }
+
+  const logDir = path.join(app.getPath("userData"), "logs");
+  fs.mkdirSync(logDir, { recursive: true });
+  logFilePath = path.join(logDir, "launcher.ndjson");
+  return logFilePath;
+}
+
+function appendLog(level, event, payload = {}) {
+  const filePath = ensureLogFilePath();
+  if (!filePath) {
+    return;
+  }
+
+  const entry = {
+    timestamp: new Date().toISOString(),
+    level,
+    event,
+    ...payload
+  };
+
+  try {
+    fs.appendFileSync(filePath, `${JSON.stringify(entry)}${os.EOL}`);
+  } catch (_error) {
+    // Logging should never block the launcher.
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -46,7 +88,21 @@ function createWindow() {
 }
 
 function updateState(patch) {
-  launcherState = { ...launcherState, ...patch };
+  launcherState = {
+    ...launcherState,
+    ...patch,
+    logPath: ensureLogFilePath() || launcherState.logPath || ""
+  };
+
+  appendLog("info", "launcher.state", {
+    status: launcherState.status,
+    phase: launcherState.phase,
+    progress_percent: launcherState.progressPercent,
+    message: launcherState.message,
+    detail: launcherState.detail,
+    error: launcherState.lastError || undefined
+  });
+
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send("launcher:state-changed", launcherState);
   }
@@ -123,6 +179,8 @@ function trimOutput(text) {
 }
 
 function formatDockerError(error) {
+  const detail = trimOutput(error.stderr || error.stdout || error.message || "Docker command failed.");
+
   if (error.code === "ENOENT") {
     return {
       message: "Docker Desktop is required. Install it, then reopen the launcher.",
@@ -130,7 +188,12 @@ function formatDockerError(error) {
     };
   }
 
-  const detail = trimOutput(error.stderr || error.stdout || error.message || "Docker command failed.");
+  if (error.code === "ETIMEDOUT") {
+    return {
+      message: "Docker stopped reporting progress. Open the log file for details and retry once Docker Desktop is responsive.",
+      detail
+    };
+  }
 
   if (/Cannot connect to the Docker daemon|dockerDesktopLinuxEngine|is the docker daemon running|error during connect/i.test(detail)) {
     return {
@@ -152,8 +215,15 @@ function formatDockerError(error) {
   };
 }
 
-function runDocker(args) {
+function runDocker(args, options = {}) {
+  const {
+    logPhase = "docker",
+    onLine,
+    idleTimeoutMs = 0
+  } = options;
+
   return new Promise((resolve, reject) => {
+    const startedAt = Date.now();
     const child = spawn("docker", args, {
       cwd: projectPaths ? projectPaths.repoRoot : process.cwd(),
       windowsHide: true
@@ -161,30 +231,130 @@ function runDocker(args) {
 
     let stdout = "";
     let stderr = "";
+    let stdoutBuffer = "";
+    let stderrBuffer = "";
+    let lastActivityAt = Date.now();
+    let settled = false;
 
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk.toString();
+    appendLog("info", "docker.command.start", {
+      phase: logPhase,
+      command: ["docker", ...args].join(" ")
     });
 
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
+    const finish = (handler) => (value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      if (idleTimer) {
+        clearInterval(idleTimer);
+      }
+      handler(value);
+    };
 
-    child.on("error", (error) => {
-      reject(Object.assign(error, { stdout, stderr }));
-    });
-
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolve({ stdout, stderr });
+    const flushBufferedLines = (stream) => {
+      const isStdout = stream === "stdout";
+      const pending = isStdout ? stdoutBuffer : stderrBuffer;
+      const line = pending.trim();
+      if (!line) {
         return;
       }
 
-      reject(
+      appendLog("info", "docker.command.output", {
+        phase: logPhase,
+        stream,
+        line
+      });
+      if (onLine) {
+        onLine({ stream, line });
+      }
+    };
+
+    const handleChunk = (stream, chunk) => {
+      const text = chunk.toString();
+      lastActivityAt = Date.now();
+
+      if (stream === "stdout") {
+        stdout += text;
+        stdoutBuffer += text;
+      } else {
+        stderr += text;
+        stderrBuffer += text;
+      }
+
+      const parts = (stream === "stdout" ? stdoutBuffer : stderrBuffer).split(/\r?\n/);
+      const remainder = parts.pop();
+
+      if (stream === "stdout") {
+        stdoutBuffer = remainder;
+      } else {
+        stderrBuffer = remainder;
+      }
+
+      for (const rawLine of parts) {
+        const line = rawLine.trim();
+        if (!line) {
+          continue;
+        }
+
+        appendLog("info", "docker.command.output", {
+          phase: logPhase,
+          stream,
+          line
+        });
+        if (onLine) {
+          onLine({ stream, line });
+        }
+      }
+    };
+
+    child.stdout.on("data", (chunk) => handleChunk("stdout", chunk));
+    child.stderr.on("data", (chunk) => handleChunk("stderr", chunk));
+
+    const idleTimer = idleTimeoutMs
+      ? setInterval(() => {
+          if (Date.now() - lastActivityAt < idleTimeoutMs) {
+            return;
+          }
+
+          child.kill();
+          finish(reject)(
+            Object.assign(new Error(`docker command timed out after ${idleTimeoutMs} ms without progress.`), {
+              code: "ETIMEDOUT",
+              stdout,
+              stderr
+            })
+          );
+        }, 5000)
+      : null;
+
+    child.on("error", (error) => {
+      finish(reject)(Object.assign(error, { stdout, stderr }));
+    });
+
+    child.on("close", (code) => {
+      flushBufferedLines("stdout");
+      flushBufferedLines("stderr");
+
+      const durationMs = Date.now() - startedAt;
+      appendLog(code === 0 ? "info" : "error", "docker.command.finish", {
+        phase: logPhase,
+        command: ["docker", ...args].join(" "),
+        exit_code: code,
+        duration_ms: durationMs
+      });
+
+      if (code === 0) {
+        finish(resolve)({ stdout, stderr, durationMs });
+        return;
+      }
+
+      finish(reject)(
         Object.assign(new Error(`docker exited with code ${code}`), {
           code,
           stdout,
-          stderr
+          stderr,
+          durationMs
         })
       );
     });
@@ -192,22 +362,29 @@ function runDocker(args) {
 }
 
 async function ensureDockerReady() {
-  await runDocker(["--version"]);
-  await runDocker(["compose", "version"]);
-  await runDocker(["info"]);
+  await runDocker(["--version"], { logPhase: "docker-version" });
+  await runDocker(["compose", "version"], { logPhase: "compose-version" });
+  await runDocker(["info"], { logPhase: "docker-info", idleTimeoutMs: 60000 });
 }
 
 async function queryStackState() {
   if (!projectPaths) {
     return {
       status: "Error",
+      phase: "Error",
+      progressPercent: 0,
       message: "Launcher files are incomplete. docker-compose.desktop.yml or desktop.env is missing.",
-      lastError: ""
+      detail: "",
+      lastError: "",
+      logPath: ensureLogFilePath() || ""
     };
   }
 
   try {
-    const result = await runDocker(getComposeArgs(["ps", "--services", "--status", "running"]));
+    const result = await runDocker(getComposeArgs(["ps", "--services", "--status", "running"]), {
+      logPhase: "stack-ps",
+      idleTimeoutMs: 60000
+    });
     const runningServices = result.stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -216,33 +393,58 @@ async function queryStackState() {
     if (runningServices.includes("app")) {
       return {
         status: "Running",
+        phase: "Running",
+        progressPercent: 100,
         message: `The app is running at ${APP_URL}`,
-        lastError: ""
+        detail: "The desktop stack is already up.",
+        lastError: "",
+        logPath: ensureLogFilePath() || ""
       };
     }
 
     return {
       status: "Stopped",
+      phase: "Idle",
+      progressPercent: 0,
       message: "The app is stopped.",
-      lastError: ""
+      detail: "",
+      lastError: "",
+      logPath: ensureLogFilePath() || ""
     };
   } catch (error) {
     const formatted = formatDockerError(error);
     return {
       status: "Stopped",
+      phase: "Idle",
+      progressPercent: 0,
       message: formatted.message,
-      lastError: formatted.detail
+      detail: "",
+      lastError: formatted.detail,
+      logPath: ensureLogFilePath() || ""
     };
   }
 }
 
-async function waitForHealthCheck() {
+async function waitForHealthCheck(onPoll) {
   const startedAt = Date.now();
+  let attempts = 0;
 
   while (Date.now() - startedAt < STARTUP_TIMEOUT_MS) {
+    attempts += 1;
+    const elapsedMs = Date.now() - startedAt;
+
+    if (onPoll) {
+      onPoll({ attempts, elapsedMs });
+    }
+
     try {
       const response = await fetch(HEALTH_URL, { method: "GET" });
       if (response.ok) {
+        appendLog("info", "health.success", {
+          url: HEALTH_URL,
+          attempts,
+          duration_ms: elapsedMs
+        });
         return;
       }
     } catch (_error) {
@@ -252,7 +454,7 @@ async function waitForHealthCheck() {
     await sleep(HEALTH_POLL_INTERVAL_MS);
   }
 
-  throw new Error("Timed out while waiting for the app to respond on http://localhost:3000.");
+  throw new Error(`Timed out while waiting for the app to respond on ${APP_URL}.`);
 }
 
 function serializeAction(action) {
@@ -260,12 +462,34 @@ function serializeAction(action) {
   return currentAction;
 }
 
+function makeProgressUpdater({ message, phase, startPercent, maxPercent }) {
+  let currentPercent = startPercent;
+
+  return (line) => {
+    if (currentPercent < maxPercent) {
+      currentPercent += 1;
+    }
+
+    updateState({
+      status: "Starting",
+      phase,
+      progressPercent: currentPercent,
+      message,
+      detail: line,
+      lastError: ""
+    });
+  };
+}
+
 async function startStack() {
   return serializeAction(async () => {
     if (!projectPaths) {
       updateState({
         status: "Error",
+        phase: "Error",
+        progressPercent: 0,
         message: "Launcher files are incomplete. Re-extract the download and try again.",
+        detail: "",
         lastError: "docker-compose.desktop.yml or desktop.env could not be found."
       });
       return launcherState;
@@ -273,7 +497,10 @@ async function startStack() {
 
     updateState({
       status: "Starting",
+      phase: "Check",
+      progressPercent: 5,
       message: "Checking Docker Desktop...",
+      detail: "Verifying Docker Desktop and Docker Compose are available.",
       lastError: ""
     });
 
@@ -282,28 +509,71 @@ async function startStack() {
 
       updateState({
         status: "Starting",
+        phase: "Pull",
+        progressPercent: 20,
         message: "Pulling Docker images...",
+        detail: "Checking Docker Hub for updated images.",
         lastError: ""
       });
-      await runDocker(getComposeArgs(["pull"]));
+      const updatePullProgress = makeProgressUpdater({
+        message: "Pulling Docker images...",
+        phase: "Pull",
+        startPercent: 20,
+        maxPercent: 55
+      });
+      await runDocker(getComposeArgs(["pull"]), {
+        logPhase: "pull",
+        idleTimeoutMs: DOCKER_IDLE_TIMEOUT_MS,
+        onLine: ({ line }) => updatePullProgress(line)
+      });
 
       updateState({
         status: "Starting",
+        phase: "Start",
+        progressPercent: 60,
         message: "Starting the application...",
+        detail: "Creating and starting containers.",
         lastError: ""
       });
-      await runDocker(getComposeArgs(["up", "-d"]));
+      const updateStartProgress = makeProgressUpdater({
+        message: "Starting the application...",
+        phase: "Start",
+        startPercent: 60,
+        maxPercent: 80
+      });
+      await runDocker(getComposeArgs(["up", "-d"]), {
+        logPhase: "up",
+        idleTimeoutMs: DOCKER_IDLE_TIMEOUT_MS,
+        onLine: ({ line }) => updateStartProgress(line)
+      });
 
       updateState({
         status: "Starting",
+        phase: "Health",
+        progressPercent: 82,
         message: "Waiting for the app to become ready...",
+        detail: `Checking ${HEALTH_URL}`,
         lastError: ""
       });
-      await waitForHealthCheck();
+      await waitForHealthCheck(({ attempts, elapsedMs }) => {
+        const ratio = Math.min(1, elapsedMs / STARTUP_TIMEOUT_MS);
+        const progressPercent = Math.min(97, 82 + Math.floor(ratio * 15));
+        updateState({
+          status: "Starting",
+          phase: "Health",
+          progressPercent,
+          message: "Waiting for the app to become ready...",
+          detail: `Health checks completed: ${attempts}`,
+          lastError: ""
+        });
+      });
 
       updateState({
         status: "Running",
+        phase: "Running",
+        progressPercent: 100,
         message: `The app is running at ${APP_URL}`,
+        detail: "Opening the browser.",
         lastError: ""
       });
       await shell.openExternal(APP_URL);
@@ -311,7 +581,10 @@ async function startStack() {
       const formatted = formatDockerError(error);
       updateState({
         status: "Error",
+        phase: "Error",
+        progressPercent: launcherState.progressPercent,
         message: formatted.message,
+        detail: launcherState.detail,
         lastError: formatted.detail
       });
     }
@@ -325,7 +598,10 @@ async function stopStack() {
     if (!projectPaths) {
       updateState({
         status: "Error",
+        phase: "Error",
+        progressPercent: 0,
         message: "Launcher files are incomplete. Re-extract the download and try again.",
+        detail: "",
         lastError: "docker-compose.desktop.yml or desktop.env could not be found."
       });
       return launcherState;
@@ -333,23 +609,47 @@ async function stopStack() {
 
     updateState({
       status: "Stopping",
+      phase: "Stop",
+      progressPercent: 15,
       message: "Stopping the application...",
+      detail: "Stopping Docker containers.",
       lastError: ""
     });
 
     try {
       await ensureDockerReady();
-      await runDocker(getComposeArgs(["down"]));
+      let stopProgress = 15;
+      await runDocker(getComposeArgs(["down"]), {
+        logPhase: "down",
+        idleTimeoutMs: DOCKER_IDLE_TIMEOUT_MS,
+        onLine: ({ line }) => {
+          stopProgress = Math.min(90, stopProgress + 5);
+          updateState({
+            status: "Stopping",
+            phase: "Stop",
+            progressPercent: stopProgress,
+            message: "Stopping the application...",
+            detail: line,
+            lastError: ""
+          });
+        }
+      });
       updateState({
         status: "Stopped",
+        phase: "Idle",
+        progressPercent: 0,
         message: "The app is stopped.",
+        detail: "",
         lastError: ""
       });
     } catch (error) {
       const formatted = formatDockerError(error);
       updateState({
         status: "Error",
+        phase: "Error",
+        progressPercent: launcherState.progressPercent,
         message: formatted.message,
+        detail: launcherState.detail,
         lastError: formatted.detail
       });
     }
@@ -394,6 +694,8 @@ async function requestAppClose() {
 
 app.whenReady().then(async () => {
   app.setName("Condo Desktop Launcher");
+  ensureLogFilePath();
+  appendLog("info", "launcher.ready", { log_path: ensureLogFilePath() });
   projectPaths = resolveProjectPaths();
   createWindow();
 
