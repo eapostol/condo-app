@@ -14,6 +14,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017/condo_app
       - JWT_SECRET=change_me_in_production
       - CLIENT_URL=http://localhost:3000
+      - GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
       - MICROSOFT_CALLBACK_URL=http://localhost:3000/api/auth/microsoft/callback
       - REPORTING_PROVIDER=mysql
       - MYSQL_HOST=mysql

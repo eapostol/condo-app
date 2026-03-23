@@ -8,6 +8,22 @@ import User from '../models/User.js';
 
 dotenv.config();
 
+function resolveCallbackUrl(rawUrl, fallbackPath) {
+  const value = rawUrl || fallbackPath;
+  if (/^https?:\/\//i.test(value)) return value;
+  const baseUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+  return new URL(value, baseUrl).toString();
+}
+
+const googleCallbackUrl = resolveCallbackUrl(
+  process.env.GOOGLE_CALLBACK_URL,
+  '/api/auth/google/callback'
+);
+const microsoftCallbackUrl = resolveCallbackUrl(
+  process.env.MICROSOFT_CALLBACK_URL,
+  '/api/auth/microsoft/callback'
+);
+
 function signJwt(user) {
   return jwt.sign(
     { id: user._id, role: user.role, email: user.email, name: user.name },
@@ -40,7 +56,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL
+      callbackURL: googleCallbackUrl
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -82,7 +98,7 @@ passport.use(
     {
       clientID: process.env.MICROSOFT_CLIENT_ID,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-      callbackURL: process.env.MICROSOFT_CALLBACK_URL,
+      callbackURL: microsoftCallbackUrl,
       tenant: process.env.MICROSOFT_TENANT || 'common'
     },
     async (accessToken, refreshToken, params, profile, done) => {
@@ -126,7 +142,7 @@ passport.use(
     {
       clientID: process.env.MICROSOFT_CLIENT_ID,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-      callbackURL: process.env.MICROSOFT_CALLBACK_URL,
+      callbackURL: microsoftCallbackUrl,
       tenant: process.env.MICROSOFT_TENANT || 'common',
       // Ensures the access token is usable for Microsoft Graph (so we can call /me when claims are missing)
       resource: 'https://graph.microsoft.com'
