@@ -1,0 +1,103 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2009 >>
+stream
+BT
+/F1 12 Tf
+50 780 Td
+14 TL
+(Condo App Launcher Cloud Implementation Plan) Tj
+T*
+() Tj
+T*
+(Goal: Build the Electron launcher architecture on AWS first while preserving) Tj
+T*
+(a clean path to Azure and Google Cloud.) Tj
+T*
+() Tj
+T*
+(Recommended implementation steps:) Tj
+T*
+(1. Document the launcher workflow and backend API contract.) Tj
+T*
+(2. Keep Docker as the packaging baseline with multi-architecture builds.) Tj
+T*
+(3. Launch an AWS-first backend with ECR, S3, API Gateway, Lambda, Cognito,) Tj
+T*
+(   and DynamoDB.) Tj
+T*
+(4. Add CloudWatch logging, alarms, and Secrets Manager-based secret storage.) Tj
+T*
+(5. Create CI/CD pipelines for Docker images and Electron installers.) Tj
+T*
+(6. Introduce queued remote operations such as restart, diagnostics, and) Tj
+T*
+(   shutdown.) Tj
+T*
+(7. Abstract infrastructure with Terraform modules for Azure and Google Cloud.) Tj
+T*
+(8. Adopt managed databases and provider-native automation as requirements grow.) Tj
+T*
+() Tj
+T*
+(Cloud service mapping:) Tj
+T*
+(- Registry: ECR / Azure Container Registry / Artifact Registry) Tj
+T*
+(- Serverless API: API Gateway + Lambda / API Management + Azure Functions /) Tj
+T*
+(  API Gateway + Cloud Functions) Tj
+T*
+(- Container runtime: ECS Fargate / Azure Container Apps / Cloud Run) Tj
+T*
+(- Identity: Cognito / Microsoft Entra External ID / Identity Platform) Tj
+T*
+(- NoSQL state store: DynamoDB / Cosmos DB / Firestore) Tj
+T*
+(- Queue/eventing: SQS + EventBridge / Service Bus + Event Grid /) Tj
+T*
+(  Pub/Sub + Eventarc) Tj
+T*
+(- Secrets: Secrets Manager / Key Vault / Secret Manager) Tj
+T*
+(- Observability: CloudWatch / Azure Monitor / Cloud Logging) Tj
+T*
+() Tj
+T*
+(Delivery phases:) Tj
+T*
+(- Phase 1: local orchestration plus cloud auth, config, and updates.) Tj
+T*
+(- Phase 2: remote callable actions, machine registration, and diagnostics.) Tj
+T*
+(- Phase 3: managed databases, scheduled maintenance, and tenant automation.) Tj
+T*
+(- Phase 4: multi-region resilience and optional multi-cloud failover.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2372
+%%EOF
