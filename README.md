@@ -5,7 +5,7 @@
 This project now supports a desktop launcher for non-technical users.
 
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for your operating system.
-2. Download the OS-specific release zip prepared by the maintainer.
+2. Download the OS-specific runtime release zip prepared by the maintainer.
 3. Unzip the package.
 4. Open the `Desktop Launcher` folder inside the unzipped package.
 5. Run the launcher for your platform.
@@ -14,7 +14,7 @@ This project now supports a desktop launcher for non-technical users.
 The launcher will:
 
 - verify Docker Desktop is available
-- pull the pinned Docker image from Docker Hub
+- pull the pinned Docker images from Docker Hub
 - start the local containers in the background
 - open your browser to [http://localhost:3000](http://localhost:3000) when the app is ready
 
@@ -49,7 +49,12 @@ This repo now has three Docker Compose entry points:
 
 - `docker-compose.yml`: production-style local build
 - `docker-compose.dev.yml`: Vite hot reload development stack
-- `docker-compose.desktop.yml`: end-user launcher stack that pulls a pinned image
+- `docker-compose.desktop.yml`: end-user launcher stack that pulls pinned runtime images
+
+### Desktop Bundle Variants
+
+- Full bundle: keeps the repo content in the zip for debugging and inspection
+- Runtime bundle: includes only the packaged launcher, runtime compose/env files, and user-facing docs
 
 ### macOS Launcher Test
 
@@ -61,6 +66,7 @@ bash scripts/desktop/test-macos.sh
 
 Run the script from a local copy of the repo on the Mac, not directly from a network share.
 The script also removes any prior desktop test containers and volumes before packaging a fresh launcher bundle.
+Package and test Mac bundles from local macOS storage only. Avoid Windows-built Mac zips and mounted shared volumes for final validation.
 
 ### Development Mode
 
@@ -90,4 +96,3 @@ docker compose down -v
 ## Maintainers
 
 Desktop image packaging and release steps are documented in [DESKTOP_LAUNCHER_RELEASE.md](./DESKTOP_LAUNCHER_RELEASE.md).
-
