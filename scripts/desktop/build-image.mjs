@@ -1,9 +1,16 @@
 import { readDesktopEnv, runCommand } from "./common.mjs";
 
-const image = readDesktopEnv().CONDO_APP_IMAGE;
+const env = readDesktopEnv();
+const image = env.CONDO_APP_IMAGE;
+const dbImage = env.CONDO_DB_IMAGE;
 
 if (!image) {
   throw new Error("CONDO_APP_IMAGE is not set in desktop.env.");
 }
 
+if (!dbImage) {
+  throw new Error("CONDO_DB_IMAGE is not set in desktop.env.");
+}
+
 await runCommand("docker", ["build", "-t", image, "."]);
+await runCommand("docker", ["build", "-f", "docker/mysql/Dockerfile", "-t", dbImage, "."]);

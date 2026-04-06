@@ -82,7 +82,7 @@ export function runCommand(command, args, options = {}) {
   });
 }
 
-export function findPackagedLauncher(platform) {
+export function findPackagedLauncher(platform, arch = "") {
   if (!fs.existsSync(launcherOutDir)) {
     throw new Error("launcher/out was not found. Package the launcher before assembling a release bundle.");
   }
@@ -91,10 +91,21 @@ export function findPackagedLauncher(platform) {
     .readdirSync(launcherOutDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .filter((name) => name.includes(`-${platform}-`));
+    .filter((name) => {
+      if (!name.includes(`-${platform}-`)) {
+        return false;
+      }
+
+      if (!arch) {
+        return true;
+      }
+
+      return name.endsWith(`-${arch}`);
+    });
 
   if (entries.length === 0) {
-    throw new Error(`No packaged launcher was found for ${platform} in launcher/out.`);
+    const archSuffix = arch ? ` (${arch})` : "";
+    throw new Error(`No packaged launcher was found for ${platform}${archSuffix} in launcher/out.`);
   }
 
   entries.sort();
@@ -102,28 +113,19 @@ export function findPackagedLauncher(platform) {
 }
 
 export function copyRecursive(sourcePath, targetPath, shouldSkip) {
-  const relativePath = path.relative(projectRoot, sourcePath) || ".";
-
-  if (shouldSkip(relativePath)) {
-    return;
-  }
-
-  const stats = fs.statSync(sourcePath);
-
-  if (stats.isDirectory()) {
-    fs.mkdirSync(targetPath, { recursive: true });
-    for (const entry of fs.readdirSync(sourcePath)) {
-      copyRecursive(
-        path.join(sourcePath, entry),
-        path.join(targetPath, entry),
-        shouldSkip
-      );
+  // Use Node's native recursive copy so packaged macOS app bundles can be
+  // copied without manually traversing framework symlinks. This matters when
+  // assembling a darwin bundle from a Windows-hosted workspace.
+  fs.cpSync(sourcePath, targetPath, {
+    recursive: true,
+    force: true,
+    dereference: false,
+    verbatimSymlinks: true,
+    filter: (currentSourcePath) => {
+      const relativePath = path.relative(projectRoot, currentSourcePath) || ".";
+      return !shouldSkip(relativePath);
     }
-    return;
-  }
-
-  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-  fs.copyFileSync(sourcePath, targetPath);
+  });
 }
 
 export async function zipDirectory(sourceDir, outputFile) {
