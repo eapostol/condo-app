@@ -45,7 +45,7 @@ services:
       start_period: 10s
 
   mysql:
-    image: mysql:8.4
+    image: ${CONDO_DB_IMAGE}
     restart: unless-stopped
     env_file:
       - ./.env.docker
@@ -56,7 +56,6 @@ services:
       - MYSQL_PASSWORD=condo_app_pw
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./server/db/mysql/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test:
         [
