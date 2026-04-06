@@ -22,7 +22,7 @@ export default function LoginPage() {
     }
   };
 
-  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+  const oauthBase = "/api";
 
   return (
     <div className="max-w-md mx-auto bg-white shadow rounded p-6 mt-10">
@@ -69,13 +69,13 @@ export default function LoginPage() {
         </p>
         <div className="flex gap-3">
           <a
-            href={`${apiBase}/auth/google`}
+            href={`${oauthBase}/auth/google`}
             className="flex-1 border rounded px-3 py-2 text-xs text-center hover:bg-slate-50"
           >
             Google
           </a>
           <a
-            href={`${apiBase}/auth/microsoft`}
+            href={`${oauthBase}/auth/microsoft`}
             className="flex-1 border rounded px-3 py-2 text-xs text-center hover:bg-slate-50"
           >
             Microsoft

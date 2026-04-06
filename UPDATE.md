@@ -141,8 +141,8 @@ npm run dev:client
 
 ### Demo Credentials
 
-- **Manager Account**: `manager1` / `Password123!`
-- **Board Member Account**: `board1` / `Password123!`
+- **Manager Account**: `manager@example.com` / `Password123!`
+- **Board Member Account**: `board@example.com` / `Password123!`
 
 ### Stopping the Application
 
@@ -201,8 +201,8 @@ This method runs the entire application stack in Docker containers with hot-relo
 
 ### Demo Credentials
 
-- **Manager Account**: `manager1` / `Password123!`
-- **Board Member Account**: `board1` / `Password123!`
+- **Manager Account**: `manager@example.com` / `Password123!`
+- **Board Member Account**: `board@example.com` / `Password123!`
 
 ### Development Features
 
