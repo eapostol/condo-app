@@ -190,4 +190,7 @@ Desktop.ini
 # Desktop launcher build outputs
 releases/
 
+# internal documentation
+docs/internal/**
+
 
