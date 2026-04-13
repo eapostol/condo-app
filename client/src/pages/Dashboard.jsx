@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext.jsx';
-import DownloadResources from '../components/DownloadResources.jsx';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -42,7 +41,6 @@ export default function Dashboard() {
           </Link>
         )}
       </div>
-      <DownloadResources />
     </div>
   );
 }
