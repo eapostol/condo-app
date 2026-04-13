@@ -27,7 +27,7 @@ jobs:
 
       - name: Create develop to main PR when needed
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PR_CREATOR_TOKEN }}
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
