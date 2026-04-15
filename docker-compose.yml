@@ -10,6 +10,8 @@ services:
       - CLIENT_URL=http://localhost:5000
       - GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
       - MICROSOFT_CALLBACK_URL=http://localhost:5000/api/auth/microsoft/callback
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - FORCE_IPV4=true
 
       # Reporting provider selection (mysql | mongo)
       - REPORTING_PROVIDER=mysql

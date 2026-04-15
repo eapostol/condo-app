@@ -16,6 +16,8 @@ services:
       - CLIENT_URL=http://localhost:3000
       - GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
       - MICROSOFT_CALLBACK_URL=http://localhost:3000/api/auth/microsoft/callback
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - FORCE_IPV4=true
       - REPORTING_PROVIDER=mysql
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
