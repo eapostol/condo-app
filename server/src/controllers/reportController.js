@@ -1,20 +1,32 @@
+// @ts-check
+
 import {
   getCatalogForRole,
   getReport,
   getFilterOptions
 } from '../services/reportingService.js';
 
+/** @typedef {import('../../../shared/contracts/reports.js').ReportCatalogResponse} ReportCatalogResponse */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportFiltersResponse} ReportFiltersResponse */
+/** @typedef {import('../../../shared/contracts/reports.js').RunReportResponse} RunReportResponse */
+
+/** @param {any} req @param {any} res */
 export async function getReportCatalog(req, res) {
   const userRole = req.user?.role;
   const catalog = getCatalogForRole(userRole);
-  res.json({ provider: (process.env.REPORTING_PROVIDER || 'mysql'), catalog });
+  /** @type {ReportCatalogResponse} */
+  const response = { provider: (process.env.REPORTING_PROVIDER || 'mysql'), catalog };
+  res.json(response);
 }
 
+/** @param {any} req @param {any} res */
 export async function getReportFilters(req, res) {
+  /** @type {ReportFiltersResponse} */
   const data = await getFilterOptions();
   res.json(data);
 }
 
+/** @param {any} req @param {any} res */
 export async function runReport(req, res) {
   try {
     const userRole = req.user?.role;
@@ -22,14 +34,18 @@ export async function runReport(req, res) {
 
     const { report, provider, rows } = await getReport(reportId, userRole, req.query);
 
-    res.json({
+    /** @type {RunReportResponse} */
+    const response = {
       report: { id: report.id, title: report.title },
       provider,
       count: rows.length,
       rows
-    });
+    };
+
+    res.json(response);
   } catch (err) {
-    const status = err.status || 500;
-    res.status(status).json({ message: err.message || 'Failed to run report' });
+    const error = /** @type {any} */ (err);
+    const status = error.status || 500;
+    res.status(status).json({ message: error.message || 'Failed to run report' });
   }
 }
