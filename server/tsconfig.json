@@ -6,6 +6,6 @@
     "moduleResolution": "NodeNext",
     "types": ["node"]
   },
-  "include": ["server.js", "src/**/*.js"],
+  "include": ["server.js", "src/**/*.js", "../shared/**/*.ts"],
   "exclude": ["node_modules"]
 }
