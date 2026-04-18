@@ -1,6 +1,9 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+/** @typedef {import('../../../shared/contracts/reports.js').ReportProvider} ReportProvider */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportRow} ReportRow */
+
 /**
  * Create and download a print-ready PDF (US Letter) for a tabular report.
  *
@@ -8,6 +11,13 @@ import autoTable from 'jspdf-autotable';
  * - Designed to be easy to extend later (branding, headers, footer text, column labels).
  * - Uses jsPDF-AutoTable for robust multi-page tables.
  * - Wide reports are exported in landscape for readability.
+ *
+ * @param {{
+ *   title?: string,
+ *   rows?: ReportRow[],
+ *   provider?: ReportProvider | string,
+ *   filtersSummary?: string[]
+ * }} [options={}]
  */
 export function downloadReportPdf({
   title = 'Report',

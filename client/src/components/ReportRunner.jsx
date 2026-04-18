@@ -1,19 +1,41 @@
+// @ts-check
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApi } from './apiClient.jsx';
 import ReportTable from './ReportTable.jsx';
 
+/** @typedef {import('../../../shared/contracts/reports.js').BoardMemberFilterOption} BoardMemberFilterOption */
+/** @typedef {import('../../../shared/contracts/reports.js').PropertyFilterOption} PropertyFilterOption */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportCatalogItem} ReportCatalogItem */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportCatalogResponse} ReportCatalogResponse */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportFiltersResponse} ReportFiltersResponse */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportProvider} ReportProvider */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportQueryFilters} ReportQueryFilters */
+/** @typedef {import('../../../shared/contracts/reports.js').ReportRow} ReportRow */
+/** @typedef {import('../../../shared/contracts/reports.js').RunReportResponse<ReportRow>} RunReportResponse */
+/**
+ * @typedef {object} ReportPdfOptions
+ * @property {string} title
+ * @property {ReportRow[]} rows
+ * @property {ReportProvider | string} provider
+ * @property {string[]} filtersSummary
+ */
+
+/** @param {{ role: import('../../../shared/contracts/auth.js').UserRole }} props */
 export default function ReportRunner({ role }) {
   const api = useApi();
 
-  const [provider, setProvider] = useState('');
-  const [catalog, setCatalog] = useState([]);
-  const [filters, setFilters] = useState({ properties: [], boardMembers: [] });
+  const [provider, setProvider] = useState(/** @type {ReportProvider | string} */ (''));
+  const [catalog, setCatalog] = useState(/** @type {ReportCatalogItem[]} */ ([]));
+  const [filters, setFilters] = useState(
+    /** @type {ReportFiltersResponse} */ ({ provider: '', properties: [], boardMembers: [] })
+  );
 
   const [reportId, setReportId] = useState('');
   const [propertyId, setPropertyId] = useState('');
   const [boardMemberId, setBoardMemberId] = useState('');
 
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(/** @type {ReportRow[]} */ ([]));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,8 +43,10 @@ export default function ReportRunner({ role }) {
     api
       .get('/reports/catalog')
       .then((res) => {
-        setProvider(res.data.provider);
-        const roleCatalog = (res.data.catalog || []).filter((r) =>
+        /** @type {ReportCatalogResponse} */
+        const data = res.data;
+        setProvider(data.provider);
+        const roleCatalog = (data.catalog || []).filter((r) =>
           role === 'admin' ? true : (r.roles || []).includes(role)
         );
         setCatalog(roleCatalog);
@@ -34,23 +58,34 @@ export default function ReportRunner({ role }) {
   useEffect(() => {
     api
       .get('/reports/filters')
-      .then((res) => setFilters(res.data))
+      .then((res) => {
+        /** @type {ReportFiltersResponse} */
+        const data = res.data;
+        setFilters(data);
+      })
       .catch(() => {});
   }, []);
 
-  const selected = useMemo(() => catalog.find((r) => r.id === reportId), [catalog, reportId]);
+  const selected = useMemo(
+    () => catalog.find((r) => r.id === reportId),
+    [catalog, reportId]
+  );
 
   async function run() {
     setError('');
     setLoading(true);
     try {
+      /** @type {ReportQueryFilters} */
       const params = {};
       if (selected?.filters?.includes('property_id') && propertyId) params.property_id = propertyId;
       if (selected?.filters?.includes('board_member_id') && boardMemberId) params.board_member_id = boardMemberId;
       const res = await api.get(`/reports/${reportId}`, { params });
-      setRows(res.data.rows || []);
+      /** @type {RunReportResponse} */
+      const data = res.data;
+      setRows(data.rows || []);
     } catch (e) {
-      setError(e.response?.data?.message || 'Failed to run report');
+      const err = /** @type {any} */ (e);
+      setError(err.response?.data?.message || 'Failed to run report');
     } finally {
       setLoading(false);
     }
@@ -61,6 +96,7 @@ export default function ReportRunner({ role }) {
   }, [reportId]);
 
   function buildFiltersSummary() {
+    /** @type {string[]} */
     const summary = [];
     if (selected?.filters?.includes('property_id')) {
       const name =
@@ -79,12 +115,14 @@ export default function ReportRunner({ role }) {
 
   async function onSavePdf() {
     const { downloadReportPdf } = await import('../utils/reportPdf.js');
-    downloadReportPdf({
+    /** @type {ReportPdfOptions} */
+    const pdfOptions = {
       title: selected?.title || 'Report',
       rows,
       provider,
       filtersSummary: buildFiltersSummary()
-    });
+    };
+    downloadReportPdf(pdfOptions);
   }
 
   return (

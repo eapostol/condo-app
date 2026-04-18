@@ -1,16 +1,24 @@
+// @ts-check
+
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../components/apiClient.jsx';
 import ReportRunner from '../components/ReportRunner.jsx';
 
+/** @typedef {import('../../../shared/contracts/reports.js').BoardMonthlySnapshotResponse} BoardMonthlySnapshotResponse */
+
 export default function BoardReports() {
   const api = useApi();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(/** @type {BoardMonthlySnapshotResponse | null} */ (null));
   const [error, setError] = useState('');
 
   useEffect(() => {
     api
       .get('/condo/board/reports/monthly')
-      .then((res) => setData(res.data))
+      .then((res) => {
+        /** @type {BoardMonthlySnapshotResponse} */
+        const report = res.data;
+        setData(report);
+      })
       .catch((err) => {
         setError(err.response?.data?.message || 'Failed to load snapshot');
       });
