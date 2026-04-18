@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --port 3000 --strictPort",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "app": "file:..",
@@ -19,9 +20,12 @@
     "react-router-dom": "^6.27.0"
   },
   "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
     "@tailwindcss/vite": "^4.1.0",
     "@vitejs/plugin-react": "^4.1.0",
     "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.3",
     "vite": "^6.0.0"
   }
 }
