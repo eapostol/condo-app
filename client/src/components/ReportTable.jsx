@@ -1,5 +1,10 @@
+// @ts-check
+
 import React from 'react';
 
+/** @typedef {import('../../../shared/contracts/reports.js').ReportRow} ReportRow */
+
+/** @param {{ rows: ReportRow[] }} props */
 export default function ReportTable({ rows }) {
   if (!rows || rows.length === 0) {
     return <div className="text-sm text-gray-600">No rows returned.</div>;
