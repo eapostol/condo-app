@@ -74,6 +74,39 @@ Package and test Mac bundles from local macOS storage only. Avoid Windows-built 
 docker compose -f docker-compose.dev.yml up --build -d
 ```
 
+### Backend Runtime Note
+
+The backend dev runtime now starts through `tsx`, and the server scripts in
+[`server/package.json`](./server/package.json) explicitly point at
+[`server/tsconfig.runtime.json`](./server/tsconfig.runtime.json).
+
+That runtime tsconfig is part of the current backend startup path for the Nest
+reporting slice. In the Dockerized dev setup, it gives `tsx` the local compiler
+settings it needs for the mixed JS and TS backend, including decorator support
+for the in-process Nest reporting module.
+
+### Reporting UI Smoke Test
+
+Once the dev stack is running, install the Playwright browser once:
+
+```bash
+npm run test:smoke:ui:install
+```
+
+Then run the reporting UI smoke test:
+
+```bash
+npm run test:smoke:ui
+```
+
+The smoke harness assumes the normal dev ports are already available:
+
+- frontend: `http://localhost:3000`
+- backend API: `http://localhost:5001`
+
+It logs in with the seeded manager user through the real backend API, opens the
+manager reporting page, and verifies the live reporting flow.
+
 ### Production-Style Local Build
 
 ```bash
@@ -92,6 +125,32 @@ docker compose down -v
 - If port `3000` is already in use, the launcher will fail until that port is free.
 - The first launch can take a while because Docker may need to pull images.
 - If the launcher says Docker is installed but not running, open Docker Desktop and wait until it reports that the engine is running.
+- After pulling a branch with new backend runtime packages such as `tsx`, a stale
+  dev `api` named volume may still have older `node_modules`.
+- If the API container starts failing after pull, refresh the running dev
+  container dependencies with:
+
+```bash
+docker compose -f docker-compose.dev.yml exec api npm install
+```
+
+- If that does not resolve the issue, rebuild the dev stack:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml up --build -d
+```
+
+- If the backend still appears to be using stale packages, reset the dev volumes
+  and rebuild:
+
+```bash
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up --build -d
+```
+
+- `down -v` removes local Docker volumes for the dev stack, so use it only when a
+  full dependency/data refresh is acceptable.
 
 ## Maintainers
 
