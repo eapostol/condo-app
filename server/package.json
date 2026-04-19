@@ -4,11 +4,15 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon ./server.js",
-    "start": "node ./server.js",
-    "seed": "node src/scripts/seed.js"
+    "dev": "tsx watch --tsconfig tsconfig.runtime.json ./server.js",
+    "start": "tsx --tsconfig tsconfig.runtime.json ./server.js",
+    "seed": "node src/scripts/seed.js",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@nestjs/common": "^11.1.19",
+    "@nestjs/core": "^11.1.19",
+    "@nestjs/platform-express": "^11.1.19",
     "app": "file:..",
     "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
@@ -21,9 +25,15 @@
     "passport": "^0.7.0",
     "passport-azure-ad-oauth2": "^0.0.4",
     "passport-google-oauth20": "^2.0.0",
-    "swagger-ui-express": "^5.0.0"
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.0",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "@types/express": "^5.0.4",
+    "@types/node": "^22.15.17",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.8.3"
   }
 }

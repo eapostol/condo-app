@@ -1,7 +1,11 @@
+// @ts-check
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext.jsx";
 import { api } from "../components/apiClient.jsx";
+
+/** @typedef {import("../../../shared/contracts/auth.js").AuthSuccessResponse} AuthSuccessResponse */
+/** @typedef {import("../../../shared/contracts/auth.js").LoginRequest} LoginRequest */
 
 export default function LoginPage() {
   const [email, setEmail] = useState("manager@example.com");
@@ -10,15 +14,24 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  /**
+   * @param {import("react").FormEvent<HTMLFormElement>} e
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const res = await api.post("/auth/login", { email, password });
-      login(res.data.user, res.data.token, res.data.user?.provider || "local");
+      const res = await api.post(
+        "/auth/login",
+        /** @type {LoginRequest} */ ({ email, password })
+      );
+      /** @type {AuthSuccessResponse} */
+      const payload = res.data;
+      login(payload.user, payload.token, payload.user.provider || "local");
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      const error = /** @type {any} */ (err);
+      setError(error.response?.data?.message || "Login failed");
     }
   };
 
