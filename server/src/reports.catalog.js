@@ -1,3 +1,7 @@
+// @ts-check
+
+/** @typedef {import('../../shared/contracts/reports.js').ReportCatalogItem} ReportCatalogItem */
+
 /**
  * Reporting catalog
  * - id is used by the API: /api/reports/:id
@@ -6,6 +10,7 @@
  *
  * Add mongoAggregationId later when REPORTING_PROVIDER=mongo.
  */
+/** @type {ReportCatalogItem[]} */
 export const REPORT_CATALOG = [
   // Manager-facing (detailed operational reports)
   {
