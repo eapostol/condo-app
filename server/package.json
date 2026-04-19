@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon ./server.js",
     "start": "node ./server.js",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "app": "file:..",
@@ -24,6 +25,8 @@
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "@types/node": "^22.15.17",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.8.3"
   }
 }
