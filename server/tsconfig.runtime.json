@@ -1,13 +1,15 @@
 {
-  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2022"],
+    "target": "ES2022",
+    "allowJs": true,
+    "checkJs": false,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
-  },
-  "include": ["server.js", "src/**/*.js", "src/**/*.ts", "../shared/**/*.ts"],
-  "exclude": ["node_modules"]
+  }
 }
